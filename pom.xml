@@ -19,7 +19,7 @@
 		<java.version>21</java.version>
 	</properties>
 
-	<dependencies>
+		<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -207,6 +207,8 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+<!--	Зачем нам две похожих настройки?Я имею в виду </build> и <profiles>-->
+<!--	И почему эти библиотеки не могут подгрузиться к моему проекту?-->
 	<profiles>
 		<profile>
 			<id>check</id>
