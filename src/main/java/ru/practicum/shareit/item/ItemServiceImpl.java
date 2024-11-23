@@ -3,8 +3,7 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.utility.UtilityValidator;
+import ru.practicum.shareit.utility.Utility;
 
 import java.util.List;
 
@@ -12,17 +11,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
-    private final UtilityValidator utilityValidator;
+    private final Utility utilityValidator;
 
     @Override
-    public ItemDto create(Item item, Long userId) {
+    public ItemDto create(ItemDto item, Long userId) {
         item.setOwner(userId);
         utilityValidator.checkUserId(userId);
         return itemRepository.create(item);
     }
 
     @Override
-    public ItemDto update(Item item, Long userId) {
+    public ItemDto update(ItemDto item, Long userId) {
         utilityValidator.checkUserId(userId);
         item.setId(utilityValidator.getItemFromUser(userId));
         return itemRepository.update(item);

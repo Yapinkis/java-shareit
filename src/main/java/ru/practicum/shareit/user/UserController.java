@@ -5,11 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.model.User;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -18,14 +14,12 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public UserDto create(@RequestBody @Valid User user) {
-        log.info("Создан пользователь ={}", user.getName());
+    public UserDto create(@RequestBody @Valid UserDto user) {
         return userService.createUser(user);
     }
 
     @PatchMapping("/{id}")
-    public UserDto update(@PathVariable Long id, @RequestBody User user) {
-        log.info("Пользовател c id ={} обвновлён в базе данных", id);
+    public UserDto update(@PathVariable Long id, @RequestBody UserDto user) {
         return userService.updateUser(id, user);
     }
 
@@ -37,7 +31,6 @@ public class UserController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         userService.deleteUser(id);
-        log.info("Пользовател c id ={} удалён из базы данных", id);
     }
 
 }

@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.utility.Utility;
 
 import java.util.List;
 
@@ -17,18 +17,19 @@ public class ItemController {
     private final ItemService itemService;
 
     @PostMapping
-    public ItemDto create(@RequestBody @Valid Item item, @RequestHeader("X-Sharer-User-Id") Long id) {
-        log.info("Создан предмет ={} принадлежащий пользователю ={}", item.getName(), id);
+    public ItemDto create(@RequestBody @Valid ItemDto item, @RequestHeader(Utility.X_SHARER_USER_ID) Long id) {
+        log.info("Для Пользователя с Id ={}", id);
         return itemService.create(item, id);
     }
 
     @PatchMapping("/{id}")
-    public ItemDto update(@RequestBody Item item, @RequestHeader("X-Sharer-User-Id") Long id) {
+    public ItemDto update(@RequestBody ItemDto item, @RequestHeader(Utility.X_SHARER_USER_ID) Long id) {
+        log.info("Для Пользователя с Id ={}", id);
         return itemService.update(item,id);
     }
 
     @GetMapping
-    public List<ItemDto> getAll(@RequestHeader("X-Sharer-User-Id") Long userId) {
+    public List<ItemDto> getAll(@RequestHeader(Utility.X_SHARER_USER_ID) Long userId) {
         return itemService.getAllFromUser(userId);
     }
 
@@ -38,7 +39,7 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchItem(@RequestParam("text") String search) {
+    public List<ItemDto> searchItem(@RequestParam(Utility.TEXT) String search) {
         return itemService.searchItem(search);
     }
 
