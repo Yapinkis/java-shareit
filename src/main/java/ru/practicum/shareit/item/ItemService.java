@@ -99,7 +99,7 @@ public class ItemService {
         User user = userRepository.findById(userId).orElseThrow(()
                 -> new EntityNotFoundException("Пользователь c " + userId + " не обнаружен"));
         Booking booking = bookingRepository.getBookingFromUserAndItem(userId,id).orElseThrow(()
-                -> new ValidationException("Бронирование пользователя с Id = " + userId + " не обнаружено"));;
+                -> new ValidationException("Бронирование пользователя с Id = " + userId + " не обнаружено"));
         utility.checkBooking(booking,user);
         commentDto.setItem(item);
         commentDto.setUser(user);
