@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS requests (
   requester BIGINT NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP, --DEFAULT CURRENT_TIMESTAMP
   CONSTRAINT pk_request PRIMARY KEY (id),
-  CONSTRAINT fk_request_user FOREIGN KEY (request) REFERENCES users(id)
+  CONSTRAINT fk_request_user FOREIGN KEY (requester) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS items (
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS items (
   request BIGINT DEFAULT NULL,
   CONSTRAINT pk_item PRIMARY KEY (id),
   CONSTRAINT fk_item_owner FOREIGN KEY (owner) REFERENCES users(id),
-  CONSTRAINT fk_item_request FOREIGN KEY (request) REFERENCES request(id)
+  CONSTRAINT fk_item_request FOREIGN KEY (request) REFERENCES requests(id)
 );
 
 CREATE TABLE IF NOT EXISTS bookings (
@@ -46,6 +46,6 @@ CREATE TABLE IF NOT EXISTS comments (
  author BIGINT NOT NULL,
  comment_time TIMESTAMP WITHOUT TIME ZONE,
  CONSTRAINT pk_comment PRIMARY KEY (id),
- CONSTRAINT fk_comment_item FOREIGN KEY (item) REFERENCES item(id),
+ CONSTRAINT fk_comment_item FOREIGN KEY (item) REFERENCES items(id),
  CONSTRAINT fk_comment_author FOREIGN KEY (author) REFERENCES users(id)
 );

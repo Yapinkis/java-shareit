@@ -12,4 +12,6 @@ public class ItemRequestDto {
     private String description;
     private Long requester;
     private LocalDateTime created;
+    // Зачем на вообще нужен Request если мы его не используем?
+    // Это тоже нужно для следующего ТЗ или роль Request у нас выполняет Booking, что очень похоже на правду
 }

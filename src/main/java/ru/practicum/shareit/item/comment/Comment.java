@@ -1,7 +1,8 @@
-package ru.practicum.shareit.item.model;
+package ru.practicum.shareit.item.comment;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
@@ -17,11 +18,10 @@ public class Comment {
     private String text;
     @ManyToOne
     @JoinColumn(name = "item")
-    private Item itemId;
+    private Item item;
     @ManyToOne
     @JoinColumn(name = "author")
-    private User authorId;
+    private User user;
     @Column(name = "comment_time",nullable = false)
     private LocalDateTime commentTime;
-    //Нужно ли нам делать DTO для этой сущности?
 }

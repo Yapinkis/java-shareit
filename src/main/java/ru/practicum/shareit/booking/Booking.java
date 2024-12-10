@@ -27,5 +27,4 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 25)
     private BookingStatus status = BookingStatus.WAITING;
-
 }
