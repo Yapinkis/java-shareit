@@ -4,10 +4,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.item.comment.Comment;
 import ru.practicum.shareit.request.ItemRequest;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.List;
 
@@ -21,9 +21,9 @@ public class ItemDto {
     private String description;
     @NotNull
     private Boolean available;
-    private User owner;
+    private UserDto owner;
     private ItemRequest request;
-    private Booking lastBooking;
-    private Booking nextBooking;
+    private BookingDto lastBooking;
+    private BookingDto nextBooking;
     private List<Comment> comments;
 }

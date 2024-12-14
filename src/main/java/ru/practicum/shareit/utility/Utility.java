@@ -10,14 +10,15 @@ import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.item.comment.Comment;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 
 @Data
@@ -32,63 +33,86 @@ public class Utility {
     public static final String X_SHARER_USER_ID = "X-Sharer-User-Id";
     public static final String TEXT = "text";
 
-    public void checkUser(UserDto userDto) {
-        if (userRepository.existsByEmail(userDto.getEmail())) {
-            throw new ValidationException("Ошибка валидации, пользователь с данным email уже существует");
+        public void checkUser(UserDto userDto) {
+            if (userRepository.existsByEmail(userDto.getEmail())) {
+                throw new ValidationException("Ошибка валидации, пользователь с данным email уже существует");
+            }
         }
-    }
+        // Наверное для таких штук мне всё-таки нужно было сделать два отдельных слоя - сервис и его имплементация,
+        // а utility оставить операции для вспомогательных методов и валидации
+
+        public void selectUserForDTOModel(Booking nextBooking, Booking lastBooking, ItemDto itemDto, Long userId) {
+            if (Objects.equals(itemDto.getOwner().getId(),userId)) {
+                Optional.ofNullable(lastBooking).map(BookingMapper::toBookingDto).ifPresent(itemDto::setLastBooking);
+                Optional.ofNullable(nextBooking).map(BookingMapper::toBookingDto).ifPresent(itemDto::setNextBooking);
+            } else {
+                itemDto.setLastBooking(null);
+                itemDto.setNextBooking(null);
+            }
+        }
+
+        public void setBookingsForItemDto(ItemDto itemDto, Map<Long, Booking> lastBooking, Map<Long,
+                Booking> nextBooking, Map<Long, List<Comment>> comments) {
+            itemDto.setLastBooking(Optional.ofNullable(lastBooking.get(itemDto.getId()))
+                    .map(BookingMapper::toBookingDto)
+                    .orElse(null));
+            itemDto.setNextBooking(Optional.ofNullable(nextBooking.get(itemDto.getId()))
+                    .map(BookingMapper::toBookingDto)
+                    .orElse(null));
+            itemDto.setComments(Optional.ofNullable(comments.get(itemDto.getId()))
+                    .orElse(Collections.emptyList()));
+        }
+
+        public void checkItem(Item item, Long id) {
+            if (Objects.equals(item.getOwner().getId(),(id))) {
+                throw new ValidationException("Пользователь пытается забронировать свою собственную вещь");
+            }
+            if (!item.getAvailable()) {
+                throw new ValidationException("Бронь для предмета недоступна");
+            }
+        }
+
+        public void checkBooking(BookingDto bookingDto) {
+            if (bookingDto.getStart().equals(bookingDto.getEnd())) {
+                throw new ValidationException("Время начала бронирования не может совпадать со " +
+                        "временем конца бронирования");
+            }
+        }
+
+        public void checkBooking(Booking booking, Long userId) {
+            if (!Objects.equals(booking.getItem().getOwner().getId(), userId)) {
+                throw new ValidationException("Id бронирования не совпадают "
+                        + booking.getBooker().getId() + " != " + userId);
+            }
+        }
 
 
-    public void checkItem(Item item, Long id) {
-        if (Objects.equals(item.getOwner().getId(),(id))) {
-            throw new ValidationException("Пользователь пытается забронировать свою собственную вещь");
+        public void checkBooking(List<Booking> booking) {
+            if (Objects.equals(booking.size(),0)) {
+                throw new ValidationException("Указан несуществующий владелец вещи");
+            }
         }
-        if (!item.getAvailable()) {
-            throw new ValidationException("Бронь для предмета недоступна");
-        }
-    }
-
-    public void checkBooking(BookingDto bookingDto) {
-        if (bookingDto.getStart().equals(bookingDto.getEnd())) {
-            throw new ValidationException("Время начала бронирования не может совпадать со " +
-                    "временем конца бронирования");
-        }
-    }
-
-    public void checkBooking(Booking booking, Long userId) {
-        if (!Objects.equals(booking.getItem().getOwner().getId(), userId)) {
-            throw new ValidationException("Id бронирования не совпадают "
-                    + booking.getBooker().getId() + " != " + userId);
-        }
-    }
 
 
-    public void checkBooking(List<Booking> booking) {
-        if (Objects.equals(booking.size(),0)) {
-            throw new ValidationException("Указан несуществующий владелец вещи");
+        public void checkBooking(Booking booking, User user) {
+            if (!Objects.equals(booking.getBooker().getId(), user.getId())) {
+                throw new ValidationException("Пользователь " + user.getId() + " не брал данный предмет " + booking.getItem() + " в аренду");
+            }
+            if (booking.getEnd().isAfter(LocalDateTime.now())) {
+                throw new ValidationException("Бронирование ещё не завершено, комментарии пока недоступны.");
+            }
         }
-    }
 
-
-    public void checkBooking(Booking booking, User user) {
-        if (!Objects.equals(booking.getBooker().getId(), user.getId())) {
-            throw new ValidationException("Пользователь " + user.getId() + " не брал данный предмет " + booking.getItem() + " в аренду");
+        public BookingDto selectBooking(Booking booking, Long userId) {
+            if (Objects.equals(booking.getBooker().getId(),userId)) {
+                return BookingMapper.toBookingDto(booking);
+            }
+            if (Objects.equals(booking.getItem().getOwner().getId(),userId)) {
+                return BookingMapper.toBookingDto(booking);
+            }
+            throw new ValidationException("Отказ в доступе, т.к. запрашивающий пользователь не является " +
+                    "Автором бронирования, либо владельцем вещи");
         }
-        if (booking.getEnd().isAfter(LocalDateTime.now())) {
-            throw new ValidationException("Бронирование ещё не завершено, комментарии пока недоступны.");
-        }
-    }
-
-    public BookingDto selectBooking(Booking booking, Long userId) {
-        if (Objects.equals(booking.getBooker().getId(),userId)) {
-            return BookingMapper.toBookingDto(booking);
-        }
-        if (Objects.equals(booking.getItem().getOwner().getId(),userId)) {
-            return BookingMapper.toBookingDto(booking);
-        }
-        throw new ValidationException("Отказ в доступе, т.к. запрашивающий пользователь не является " +
-                "Автором бронирования, либо владельцем вещи");
-    }
 
     public List<Booking> chooseBookingByUser(Long id, String state) {
         return switch (state.toUpperCase()) {

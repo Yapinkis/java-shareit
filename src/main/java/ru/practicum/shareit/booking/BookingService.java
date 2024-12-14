@@ -6,8 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.exception.EntityNotFoundException;
+import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.utility.Utility;
@@ -32,8 +34,8 @@ public class BookingService {
         utility.checkItem(item,id);
         User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Пользователь c " + id +
                 " не обнаружен"));
-        bookingDto.setItem(item);
-        bookingDto.setBooker(user);
+        bookingDto.setItem(ItemMapper.toItemDto(item));
+        bookingDto.setBooker(UserMapper.toUserDto(user));
         Booking booking = BookingMapper.toBooking(bookingDto);
         bookingRepository.save(booking);
         log.info("Заказ с Id ={} для позиции ={} в базу данных", booking.getId(), booking.getItem().getName());
@@ -41,8 +43,9 @@ public class BookingService {
     }
 
     BookingDto approve(Long id,Long userId, boolean available) {
-        Item item = itemRepository.findByOwnerId(userId).orElseThrow(()
-                -> new ValidationException("Предмет с пользователя указанным Id" + userId + " не найден"));
+        itemRepository.existsById(itemRepository.findByOwnerId(userId).orElseThrow(()
+                        -> new ValidationException("Предмет с пользователя указанным Id " + userId + " не найден"))
+                .getId());
         Booking booking = bookingRepository.findById(id).orElseThrow(()
                 -> new EntityNotFoundException("Бронирование с указанным Id" + id + " не обнаружено"));
         utility.checkBooking(booking,userId);
@@ -71,8 +74,6 @@ public class BookingService {
     List<BookingDto> getOwnerBookings(Long id, String state) {
         List<Booking> bookings = utility.chooseBookingByOwner(id,state);
         utility.checkBooking(bookings);
-        //bookings.sort((b1, b2) -> b2.getStart().compareTo(b1.getStart()));
-        //Кажется здесь нам не нужна сортировка по времени
         return bookings.stream().map(BookingMapper::toBookingDto).collect(Collectors.toList());
     }
 

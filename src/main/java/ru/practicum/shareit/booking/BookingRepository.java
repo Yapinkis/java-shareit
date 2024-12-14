@@ -14,6 +14,18 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT b FROM Booking b WHERE b.booker.id = ?1 AND b.item.id = ?2 AND b.status = 'APPROVED' AND b.end < CURRENT_TIMESTAMP")
     Optional<Booking> getBookingFromUserAndItem(Long userId, Long itemId);
 
+    @Query("SELECT b FROM Booking b WHERE b.item.id = ?1 AND b.end < CURRENT_TIMESTAMP ORDER BY b.end DESC")
+    Booking getLastBooking(Long itemId);
+
+    @Query("SELECT b FROM Booking b WHERE b.item.id = ?1 AND b.start > CURRENT_TIMESTAMP ORDER BY b.start ASC")
+    Booking getNextBooking(Long itemId);
+
+    @Query("SELECT b FROM Booking b WHERE b.item.id IN :itemsIds AND b.end < CURRENT_TIMESTAMP ORDER BY b.end DESC")
+    List<Booking> getAllLastBookings(List<Long> itemsIds);
+
+    @Query("SELECT b FROM Booking b WHERE b.item.id IN :itemsIds AND b.start > CURRENT_TIMESTAMP ORDER BY b.start ASC")
+    List<Booking> getAllNextBookings(List<Long> itemsIds);
+
     /**
      * Набор методов для получение списка всех бронирований текущего пользователя
      * @param userId идентификатор пользователя, для которого нужно получить бронирования.
