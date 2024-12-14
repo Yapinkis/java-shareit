@@ -1,13 +1,20 @@
 package ru.practicum.shareit.user;
 
-import ru.practicum.shareit.user.dto.UserDto;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+import ru.practicum.shareit.user.model.User;
 
-interface UserRepository {
-    UserDto createUser(UserDto user);
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+    @Query("SELECT b.booker FROM Booking b WHERE b.item.id = ?1 AND b.status = 'APPROVED'")
+    User findBookerByItemId(Long itemId);
 
-    UserDto getUser(Long id);
+    /**
+     Валидация User
+     **/
 
-    UserDto updateUser(UserDto user);
+    boolean existsByEmail(String email);
 
-    void deleteUser(Long id);
+
 }

@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 import lombok.Data;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.UserMapper;
 
 @Data
 public class ItemMapper {
@@ -13,7 +14,7 @@ public class ItemMapper {
         item.setName(itemDto.getName());
         item.setDescription(itemDto.getDescription());
         item.setAvailable(itemDto.getAvailable());
-        item.setOwner(itemDto.getOwner());
+        item.setOwner(UserMapper.toUser(itemDto.getOwner()));
         item.setRequest(itemDto.getRequest());
         return item;
     }
@@ -24,7 +25,7 @@ public class ItemMapper {
         itemDto.setName(item.getName());
         itemDto.setDescription(item.getDescription());
         itemDto.setAvailable(item.getAvailable());
-        itemDto.setOwner(item.getOwner());
+        itemDto.setOwner(UserMapper.toUserDto(item.getOwner()));
         itemDto.setRequest(item.getRequest());
         return itemDto;
     }
