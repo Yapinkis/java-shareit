@@ -1,16 +1,30 @@
 package ru.practicum.shareit.booking;
 
+import jakarta.persistence.*;
 import lombok.Data;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 
 @Data
+@Entity
+@Table(name = "bookings")
 public class Booking {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "time_start", nullable = false)
     private LocalDateTime start;
+    @Column(name = "time_end", nullable = false)
     private LocalDateTime end;
-    private Long item;
-    private Long booker;
-    private BookingStatus status;
-
+    @ManyToOne
+    @JoinColumn(name = "item")
+    private Item item;
+    @ManyToOne
+    @JoinColumn(name = "booker")
+    private User booker;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 25)
+    private BookingStatus status = BookingStatus.WAITING;
 }
