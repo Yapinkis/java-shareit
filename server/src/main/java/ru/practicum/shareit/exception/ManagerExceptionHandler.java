@@ -29,10 +29,11 @@ public class ManagerExceptionHandler {
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<String> handleNotFoundError(EntityNotFoundException exception) {
+    public ResponseEntity<Map<String, String>> handleNotFoundError(EntityNotFoundException exception) {
         log.error("Возникла ошибка при обновлении объекта: {}", exception.getMessage());
-        String error = exception.getMessage();
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", exception.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(Exception.class)

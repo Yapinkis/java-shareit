@@ -15,10 +15,6 @@ public class BookingController {
     @PostMapping
     public BookingDto create(@RequestBody BookingDto bookingDto, @RequestHeader(Utility.X_SHARER_USER_ID) Long id) {
         return bookingService.create(bookingDto, id);
-        //я убираю аннотацию @Valid т.к. её по идее теперь выполняет gateway?
-        //и ещё,я на вход контроллеру принимаю ту же модел BookItemRequestDto что и в gateway, которая имеет поля с проверкой валидации
-        //а врзвращаю свою модель bookingDto с необходимыми по условиям полями, верен ли подобный подход?
-        // Или я могу дополнить модель указанную в gateway просто дополнить её необходимыми полями?
      }
 
     @PatchMapping("/{id}")

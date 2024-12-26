@@ -22,6 +22,7 @@ import ru.practicum.shareit.utility.Utility;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -96,6 +97,23 @@ public class ItemServiceTest {
     }
 
     @Test
+    void update_ShouldUpdateItemFields() {
+        when(itemRepository.findByOwnerId(1L)).thenReturn(Optional.of(item));
+
+        ItemDto updatedDto = new ItemDto();
+        updatedDto.setName("Updated Name");
+        updatedDto.setDescription("Updated Description");
+        updatedDto.setAvailable(false);
+
+        ItemDto result = itemService.update(updatedDto, 1L);
+
+        assertEquals("Updated Name", result.getName());
+        assertEquals("Updated Description", result.getDescription());
+        assertFalse(result.getAvailable());
+        verify(itemRepository, times(1)).save(item);
+    }
+
+    @Test
     void get_ShouldReturnItem() {
         when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
 
@@ -153,5 +171,25 @@ public class ItemServiceTest {
         verify(userRepository, times(1)).findById(1L);
         verify(bookingRepository, times(1)).getBookingFromUserAndItem(1L, 1L);
         verify(commentRepository, times(1)).save(any(Comment.class));
+    }
+
+    @Test
+    void searchItem_ShouldReturnEmptyList_WhenNoMatches() {
+        when(itemRepository.search("nonexistent")).thenReturn(Collections.emptyList());
+
+        List<ItemDto> result = itemService.searchItem("nonexistent");
+
+        assertTrue(result.isEmpty());
+        verify(itemRepository, times(1)).search("nonexistent");
+    }
+
+    @Test
+    void getAllFromUser_ShouldReturnEmptyList_WhenNoItems() {
+        when(itemRepository.getAllFromUser(1L)).thenReturn(Collections.emptyList());
+
+        List<ItemDto> result = itemService.getAllFromUser(1L);
+
+        assertTrue(result.isEmpty());
+        verify(itemRepository, times(1)).getAllFromUser(1L);
     }
 }
