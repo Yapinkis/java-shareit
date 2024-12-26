@@ -1,8 +1,9 @@
 package ru.practicum.shareit.comment;
 
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
-import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.user.User;
 
 import java.time.LocalDateTime;
 
@@ -10,8 +11,9 @@ import java.time.LocalDateTime;
 public class CommentRequestDto {
     private Long id;
     private String text;
-    private Item item;
-    private User user;
-    private String authorName;
+    @NotBlank
+    @Size(max = 500)
+    private String description;
+    @FutureOrPresent
     private LocalDateTime created;
 }

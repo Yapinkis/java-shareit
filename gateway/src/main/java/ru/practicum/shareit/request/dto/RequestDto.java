@@ -1,17 +1,17 @@
 package ru.practicum.shareit.request.dto;
 
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
-import ru.practicum.shareit.item.ItemDto;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 public class RequestDto {
-    private Long id;
+    @NotBlank
+    @Size(max = 500)
     private String description;
-//    private String name;
-    private Long requestId;
-    private LocalDateTime created = LocalDateTime.now();
-    private List<ItemDto> items;
+    @FutureOrPresent
+    private LocalDateTime created;
 }

@@ -9,11 +9,7 @@ public class ItemRequestMapper {
         ItemRequest itemRequest = new ItemRequest();
         itemRequest.setId(itemRequestDto.getId());
         itemRequest.setDescription(itemRequestDto.getDescription());
-        if (itemRequestDto == null) {
-            itemRequest.setCreated(itemRequestDto.getCreated());
-        } else {
-            itemRequest.setCreated(LocalDateTime.now());
-        }
+        itemRequest.setCreated(itemRequestDto.getCreated() != null ? itemRequestDto.getCreated() : LocalDateTime.now());
         return itemRequest;
     }
 
