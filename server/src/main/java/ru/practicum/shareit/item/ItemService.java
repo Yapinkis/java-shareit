@@ -127,10 +127,10 @@ public class ItemService {
         // Booking нам нужен т.к. один из тестов "Comment approved booking" как раз подразумевает возможность
         // оставлять комментарии только для Booking со статусом Approved
         utility.checkBooking(booking,user);
-        commentDto.setItem(item);
-        commentDto.setUser(user);
-        commentDto.setCreated(LocalDateTime.now());
         Comment comment = CommentMapper.toComment(commentDto);
+        comment.setItem(item);
+        comment.setUser(user);
+        comment.setCommentTime(LocalDateTime.now());
         commentRepository.save(comment);
         return CommentMapper.toCommentDto(comment);
     }
