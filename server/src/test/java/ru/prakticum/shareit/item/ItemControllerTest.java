@@ -18,6 +18,7 @@ import ru.practicum.shareit.item.comment.CommentDto;
 import ru.practicum.shareit.utility.Utility;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -119,6 +120,27 @@ public class ItemControllerTest {
                         .param("text", "nonexistent"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void getAll_ShouldReturnListOfItems() throws Exception {
+        ItemDto secondItemDto = new ItemDto();
+        secondItemDto.setId(2L);
+        secondItemDto.setName("Another Item");
+        secondItemDto.setDescription("Another description");
+        secondItemDto.setAvailable(false);
+
+        when(itemService.getAllFromUser(1L)).thenReturn(List.of(itemDto, secondItemDto));
+
+        mockMvc.perform(get("/items")
+                        .header(Utility.X_SHARER_USER_ID, 1L)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].name").value("Test Item"))
+                .andExpect(jsonPath("$[1].name").value("Another Item"));
+
+        verify(itemService, times(1)).getAllFromUser(1L);
     }
 
 

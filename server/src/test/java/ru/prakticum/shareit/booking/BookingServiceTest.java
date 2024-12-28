@@ -1,5 +1,6 @@
 package ru.prakticum.shareit.booking;
 
+import jakarta.validation.ValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -176,6 +177,36 @@ public class BookingServiceTest {
                 .when(utility).selectBooking(booking, 2L);
 
         assertThrows(EntityNotFoundException.class, () -> bookingService.getBooking(1L, 2L));
+    }
+
+    @Test
+    void approve_ShouldThrowValidationException_WhenOwnerNotFound() {
+        when(itemRepository.findByOwnerId(999L)).thenReturn(Optional.empty());
+
+        ValidationException ex = assertThrows(
+                ValidationException.class,
+                () -> bookingService.approve(1L, 999L, true)
+        );
+
+        assertTrue(ex.getMessage().contains("Предмет с пользователя указанным Id 999 не найден"));
+        verify(itemRepository, times(1)).findByOwnerId(999L);
+        verifyNoMoreInteractions(itemRepository, bookingRepository, utility);
+    }
+
+    @Test
+    void approve_ShouldThrowEntityNotFoundException_WhenBookingNotFound() {
+        when(itemRepository.findByOwnerId(100L)).thenReturn(Optional.of(item));
+        when(itemRepository.existsById(500L)).thenReturn(true);
+
+        when(bookingRepository.findById(1L)).thenReturn(Optional.empty());
+
+        EntityNotFoundException ex = assertThrows(
+                EntityNotFoundException.class,
+                () -> bookingService.approve(1L, 100L, true)
+        );
+
+        assertTrue(ex.getMessage().contains("Бронирование с указанным Id1 не обнаружено"));
+        verify(bookingRepository, times(1)).findById(1L);
     }
 
 }

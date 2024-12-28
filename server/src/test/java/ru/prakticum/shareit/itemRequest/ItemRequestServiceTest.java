@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
+import ru.practicum.shareit.exception.EntityNotFoundException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.request.ItemRequestDto;
@@ -83,6 +84,21 @@ public class ItemRequestServiceTest {
         assertEquals(1, result.size());
         assertEquals("Test Request", result.get(0).getDescription());
         verify(itemRequestRepository, times(1)).findRequestsByUser(1L);
+    }
+
+    @Test
+    void getById_whenItemRequestNotFound_thenThrowEntityNotFoundException() {
+        when(itemRequestRepository.findItemRequestById(999L))
+                .thenReturn(Optional.empty());
+
+        EntityNotFoundException ex = assertThrows(
+                EntityNotFoundException.class,
+                () -> itemRequestService.getById(100L, 999L)
+        );
+
+        assertTrue(ex.getMessage().contains("Request не обнаружен"));
+
+        verify(itemRepository, never()).findAllByRequest_Id(anyLong());
     }
 
     @Test
