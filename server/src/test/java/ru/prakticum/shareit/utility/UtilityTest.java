@@ -208,4 +208,28 @@ public class UtilityTest {
         verifyNoMoreInteractions(bookingRepository);
     }
 
+    @Test
+    void selectBooking_whenUserIsNeitherOwnerNorBooker_throwValidationException() {
+        User booker = new User();
+        booker.setId(300L);
+
+        User owner = new User();
+        owner.setId(400L);
+
+        Item item = new Item();
+        item.setOwner(owner);
+
+        Booking booking = new Booking();
+        booking.setBooker(booker);
+        booking.setItem(item);
+
+        Long someOtherId = 999L;
+        ValidationException ex = assertThrows(
+                ValidationException.class,
+                () -> utility.selectBooking(booking, someOtherId)
+        );
+
+        assertTrue(ex.getMessage().contains("Отказ в доступе"), "В сообщении должно быть упоминание об отказе в доступе");
+    }
+
 }
