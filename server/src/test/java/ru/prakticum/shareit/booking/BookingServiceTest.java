@@ -168,4 +168,14 @@ public class BookingServiceTest {
         verify(utility, times(1)).checkBooking(anyList());
     }
 
+    @Test
+    void getBooking_ShouldThrowException_WhenUserIsNotBookerOrOwner() {
+        when(bookingRepository.findById(1L)).thenReturn(Optional.of(booking));
+
+        doThrow(new EntityNotFoundException("Пользователь не имеет доступа к данной брони"))
+                .when(utility).selectBooking(booking, 2L);
+
+        assertThrows(EntityNotFoundException.class, () -> bookingService.getBooking(1L, 2L));
+    }
+
 }

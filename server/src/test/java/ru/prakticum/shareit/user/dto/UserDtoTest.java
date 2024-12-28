@@ -26,7 +26,6 @@ public class UserDtoTest {
 
     @Test
     void testSerialize() throws Exception {
-        // Arrange
         UserDto userDto = new UserDto();
         userDto.setId(1L);
         userDto.setEmail("test@example.com");

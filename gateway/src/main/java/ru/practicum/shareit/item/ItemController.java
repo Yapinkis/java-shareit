@@ -22,8 +22,6 @@ public class ItemController {
     @PostMapping
     public ResponseEntity<Object> create(@RequestBody @Valid ItemRequestDto itemRequestDto,
                                  @RequestHeader(Utility.X_SHARER_USER_ID) Long id) {
-        // @Valid наверное здесь можно убрать исходя из тестов в postman, комментарий по этому поовду
-        // оставил в сервисе Item
         log.info("Для Пользователя с Id ={}", id);
         return itemClient.create(id, itemRequestDto);
     }

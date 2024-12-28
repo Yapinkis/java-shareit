@@ -88,21 +88,17 @@ public class ItemServiceIntegrationTest {
         booking.setStatus(BookingStatus.APPROVED);
         booking = bookingRepository.save(booking);
 
-        // Создаем CommentDto
         CommentDto commentDto = new CommentDto();
         commentDto.setText("This is a comment");
 
-        // Вызываем метод сервиса
         CommentDto createdComment = itemService.addComment(user.getId(), item.getId(), commentDto);
 
-        // Проверяем созданный комментарий
         assertNotNull(createdComment.getId());
         assertEquals("This is a comment", createdComment.getText());
         assertNotNull(createdComment.getCreated());
         assertNotNull(createdComment.getAuthorName());
         assertEquals(user.getName(), createdComment.getAuthorName());
 
-        // Проверяем маппинг User и Item
         assertNotNull(createdComment.getUser());
         assertEquals(user.getId(), createdComment.getUser().getId());
         assertEquals(user.getName(), createdComment.getUser().getName());
@@ -113,7 +109,6 @@ public class ItemServiceIntegrationTest {
         assertEquals(item.getName(), createdComment.getItem().getName());
         assertEquals(item.getDescription(), createdComment.getItem().getDescription());
 
-        // Проверяем сохранение комментария в базе данных
         Optional<Comment> savedComment = commentRepository.findById(createdComment.getId());
         assertTrue(savedComment.isPresent());
         assertEquals("This is a comment", savedComment.get().getText());

@@ -17,15 +17,15 @@ import java.util.stream.Collectors;
 public class ManagerExceptionHandler {
 
     @ExceptionHandler({MethodArgumentNotValidException.class, ValidationException.class})
-    public ResponseEntity<Map<Integer,String>> handleValidationError(MethodArgumentNotValidException exception) {
+    public ResponseEntity<Map<String, String>> handleValidationError(MethodArgumentNotValidException exception) {
         log.error("Возникла ошибка валидации данных: {}", exception.getMessage());
-        Map<Integer, String> response = new HashMap<>();
-        int count = exception.getErrorCount();
         String errorMessage = exception.getBindingResult().getFieldErrors().stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .collect(Collectors.joining(", "));
-        response.put(count,errorMessage);
+        Map<String, String> response = new HashMap<>();
+        response.put("error", errorMessage);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        //Оказывается ошибки в тестах были из-за возвращаемого значения обработчика ошибок.
     }
 
     @ExceptionHandler(EntityNotFoundException.class)

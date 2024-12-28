@@ -32,9 +32,6 @@ public class BookingClient extends BaseClient {
     }
 
     public ResponseEntity<Object> approve(Long id, Boolean approved, Long userId) {
-//        Map<String, Object> parameters = Map.of("approved", approved);
-//        return patch("/" + id + "?approved={approved}",userId, parameters);
-        // Почему-то данная строка не отрабатывает и ведёт к ошибке, хотя с точки зрения синтаксиса здесь вроде всё верно...
         return patch("/" + id + "?approved=" + approved, userId, null);
     }
 

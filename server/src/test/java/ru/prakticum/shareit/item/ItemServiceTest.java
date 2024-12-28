@@ -16,6 +16,8 @@ import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.item.comment.Comment;
 import ru.practicum.shareit.item.comment.CommentDto;
 import ru.practicum.shareit.item.comment.CommentRepository;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.utility.Utility;
@@ -44,6 +46,9 @@ public class ItemServiceTest {
     private CommentRepository commentRepository;
 
     @Mock
+    private ItemRequestRepository itemRequestRepository;
+
+    @Mock
     private Utility utility;
 
     private Item item;
@@ -51,6 +56,8 @@ public class ItemServiceTest {
     private ItemDto itemDto;
     private Comment comment;
     private CommentDto commentDto;
+
+    private ItemRequest itemRequest;
 
     @BeforeEach
     void setUp() {
@@ -82,6 +89,12 @@ public class ItemServiceTest {
         commentDto = new CommentDto();
         commentDto.setId(1L);
         commentDto.setText("Great item!");
+
+        itemRequest = new ItemRequest();
+        itemRequest.setId(1L);
+        itemRequest.setUser(user);
+        itemRequest.setDescription("Description");
+        itemRequest.setCreated(LocalDateTime.now());
     }
 
     @Test
@@ -93,6 +106,27 @@ public class ItemServiceTest {
 
         assertNotNull(result);
         assertEquals("Test Item", result.getName());
+        verify(itemRepository, times(1)).save(any(Item.class));
+    }
+
+    @Test
+    void create_ShouldCreateItemWithRequestId_WhenRequestFound() {
+        itemDto.setRequestId(100L);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        ItemRequest foundRequest = new ItemRequest();
+        foundRequest.setId(100L);
+        foundRequest.setDescription("Sample request");
+        foundRequest.setUser(user);
+        when(itemRequestRepository.findById(100L)).thenReturn(Optional.of(foundRequest));
+
+        when(itemRepository.save(any(Item.class))).thenReturn(item);
+
+        ItemDto result = itemService.create(itemDto, 1L);
+
+        assertNotNull(result);
+        assertEquals("Test Item", result.getName());
+        verify(itemRequestRepository, times(1)).findById(100L);
         verify(itemRepository, times(1)).save(any(Item.class));
     }
 
@@ -110,6 +144,31 @@ public class ItemServiceTest {
         assertEquals("Updated Name", result.getName());
         assertEquals("Updated Description", result.getDescription());
         assertFalse(result.getAvailable());
+        verify(itemRepository, times(1)).save(item);
+    }
+
+    @Test
+    void update_ShouldThrowException_WhenItemNotFoundForUser() {
+        when(itemRepository.findByOwnerId(1L)).thenReturn(Optional.empty());
+
+        ItemDto updatedDto = new ItemDto();
+        updatedDto.setName("Updated Name");
+
+        assertThrows(EntityNotFoundException.class, () -> itemService.update(updatedDto, 1L));
+        verify(itemRepository, times(1)).findByOwnerId(1L);
+    }
+
+    @Test
+    void update_ShouldNotChangeFields_WhenNullFieldsProvided() {
+        when(itemRepository.findByOwnerId(1L)).thenReturn(Optional.of(item));
+
+        ItemDto partialDto = new ItemDto();
+
+        itemService.update(partialDto, 1L);
+
+        assertEquals("Test Item", item.getName());
+        assertEquals("Description", item.getDescription());
+        assertTrue(item.getAvailable());
         verify(itemRepository, times(1)).save(item);
     }
 
@@ -136,6 +195,30 @@ public class ItemServiceTest {
         when(itemRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> itemService.get(1L, 1L));
+    }
+
+    @Test
+    void get_ShouldReturnItemWithBookingsAndComments() {
+        when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
+
+        Booking lastBooking = new Booking();
+        lastBooking.setId(10L);
+        Booking nextBooking = new Booking();
+        nextBooking.setId(20L);
+
+        when(bookingRepository.getLastBooking(1L)).thenReturn(lastBooking);
+        when(bookingRepository.getNextBooking(1L)).thenReturn(nextBooking);
+
+        Comment comment = new Comment();
+        comment.setId(5L);
+        comment.setText("Some comment");
+        when(commentRepository.getComments(1L)).thenReturn(List.of(comment));
+
+        doNothing().when(utility).selectUserForDTOModel(any(), any(), any(), eq(1L));
+
+        ItemDto result = itemService.get(1L, 1L);
+        assertNotNull(result);
+        assertEquals(1, result.getComments().size());
     }
 
     @Test
@@ -174,6 +257,20 @@ public class ItemServiceTest {
     }
 
     @Test
+    void addComment_ShouldThrowException_WhenItemNotFound() {
+        when(itemRepository.findById(999L)).thenReturn(Optional.empty());
+
+        CommentDto commentDto = new CommentDto();
+        commentDto.setText("Any comment text");
+
+        assertThrows(EntityNotFoundException.class,
+                () -> itemService.addComment(1L, 999L, commentDto));
+
+        verify(itemRepository, times(1)).findById(999L);
+        verifyNoMoreInteractions(itemRepository, bookingRepository, commentRepository);
+    }
+
+    @Test
     void searchItem_ShouldReturnEmptyList_WhenNoMatches() {
         when(itemRepository.search("nonexistent")).thenReturn(Collections.emptyList());
 
@@ -181,6 +278,17 @@ public class ItemServiceTest {
 
         assertTrue(result.isEmpty());
         verify(itemRepository, times(1)).search("nonexistent");
+    }
+
+    @Test
+    void searchItem_ShouldReturnListOfItems_WhenMatchesFound() {
+        when(itemRepository.search("test")).thenReturn(List.of(item));
+
+        List<ItemDto> result = itemService.searchItem("test");
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+        assertEquals("Test Item", result.get(0).getName());
+        verify(itemRepository, times(1)).search("test");
     }
 
     @Test
@@ -192,4 +300,30 @@ public class ItemServiceTest {
         assertTrue(result.isEmpty());
         verify(itemRepository, times(1)).getAllFromUser(1L);
     }
+
+    @Test
+    void getAllFromUser_ShouldReturnItemDto_WhenNoBookingsButHasComments() {
+        when(itemRepository.getAllFromUser(1L)).thenReturn(List.of(item));
+        item.setId(1L);
+
+        when(bookingRepository.getAllLastBookings(List.of(1L))).thenReturn(Collections.emptyList());
+        when(bookingRepository.getAllNextBookings(List.of(1L))).thenReturn(Collections.emptyList());
+
+        Comment comment = new Comment();
+        comment.setId(5L);
+        comment.setText("Some comment");
+        comment.setItem(item);
+        when(commentRepository.getAllComments(List.of(1L))).thenReturn(List.of(comment));
+
+        doNothing().when(utility).setBookingsForItemDto(any(ItemDto.class),
+                anyMap(), anyMap(), anyMap());
+
+        List<ItemDto> result = itemService.getAllFromUser(1L);
+
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+
+        verify(utility, times(1)).setBookingsForItemDto(any(), anyMap(), anyMap(), anyMap());
+    }
+
 }

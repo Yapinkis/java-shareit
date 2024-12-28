@@ -4,11 +4,11 @@ import jakarta.validation.ValidationException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.stereotype.Component;
+import ru.practicum.shareit.booking.*;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemDto;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.comment.Comment;
-import ru.practicum.shareit.booking.*;
 import ru.practicum.shareit.item.comment.CommentMapper;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserDto;
@@ -72,12 +72,6 @@ public class Utility {
             }
         }
 
-        public void checkItem(Item item) {
-            if (item.getName() == null || item.getDescription() == null || item.getAvailable() == null) {
-                throw new ValidationException("Ошибка валидации объекта");
-            }
-        }
-
         public void checkBooking(BookingDto bookingDto) {
             if (bookingDto.getStart().equals(bookingDto.getEnd())) {
                 throw new ValidationException("Время начала бронирования не может совпадать со " +
@@ -92,13 +86,11 @@ public class Utility {
             }
         }
 
-
         public void checkBooking(List<Booking> booking) {
             if (Objects.equals(booking.size(),0)) {
                 throw new ValidationException("Указан несуществующий владелец вещи");
             }
         }
-
 
         public void checkBooking(Booking booking, User user) {
             if (!Objects.equals(booking.getBooker().getId(), user.getId())) {

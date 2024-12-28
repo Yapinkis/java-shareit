@@ -4,13 +4,13 @@ import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.exception.EntityNotFoundException;
 import ru.practicum.shareit.item.comment.Comment;
 import ru.practicum.shareit.item.comment.CommentDto;
 import ru.practicum.shareit.item.comment.CommentMapper;
 import ru.practicum.shareit.item.comment.CommentRepository;
-import ru.practicum.shareit.booking.Booking;
-import ru.practicum.shareit.booking.BookingRepository;
-import ru.practicum.shareit.exception.EntityNotFoundException;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
@@ -45,24 +45,6 @@ public class ItemService {
                     .orElseThrow(() -> new EntityNotFoundException("Запрос с ID " + itemDto.getRequestId() + " не найден"));
         }
         Item item = ItemMapper.toItem(itemDto);
-        utility.checkItem(item);
-        // Надеюсь я что-то сделал неправильно или неправильно понял суть теста, в котором не могу создать предмет по
-        // запросу без наличия одного из полей, ну либо опыта у меня совсем мало. Просто в таком случае мы полностью
-        // отсеиваем валидацию на уровне слоя gateway или это как-то можно сделать иначе на уровне слоя gateway,
-        // но с аннотацией @Valid я постоянно сталкивался с ошибкой при прохождении тестов
-        // Create Item without name on request
-        // Create Item without description on request
-        // Create Item without available on request
-
-        /**
-         * r.p.s.exception.ManagerExceptionHandler : Возникла ошибка валидации данных: Validation failed for argument[0]
-         * in public org.springframework.http.ResponseEntity<java.lang.Object> ru.practicum.shareit.item.ItemController.
-         * create(ru.practicum.shareit.item.dto.ItemRequestDto,java.lang.Long): [Field error in object 'itemRequestDto'
-         * on field 'name': rejected value [null]; codes [NotBlank.itemRequestDto.name,NotBlank.name,NotBlank.java.lang.
-         * String,NotBlank]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes
-         * [itemRequestDto.name,name]; arguments []; default message [name]]; default message [не должно быть пустым]]
-         */
-
         item.setOwner(user);
         item.setRequest(itemRequest);
         itemRepository.save(item);
@@ -124,8 +106,6 @@ public class ItemService {
                 -> new EntityNotFoundException("Пользователь c " + userId + " не обнаружен"));
         Booking booking = bookingRepository.getBookingFromUserAndItem(userId,id).orElseThrow(()
                 -> new ValidationException("Бронирование пользователя с Id = " + userId + " не обнаружено"));
-        // Booking нам нужен т.к. один из тестов "Comment approved booking" как раз подразумевает возможность
-        // оставлять комментарии только для Booking со статусом Approved
         utility.checkBooking(booking,user);
         Comment comment = CommentMapper.toComment(commentDto);
         comment.setItem(item);

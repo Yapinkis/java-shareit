@@ -23,7 +23,7 @@ public class ItemController {
 
     @PatchMapping("/{id}")
     public ItemDto update(@RequestBody ItemDto itemDto, @RequestHeader(Utility.X_SHARER_USER_ID) Long id) {
-        log.info("Для Пользователя с Id ={}", id);
+        log.info("Обновление для Пользователя с Id ={}", id);
         return itemService.update(itemDto,id);
     }
 
